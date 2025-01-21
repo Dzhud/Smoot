@@ -1,0 +1,37 @@
+/* src/styles/customStyles.css */
+
+.input-range {
+  @apply w-full;
+}
+
+.input-range::-webkit-slider-thumb {
+  background-color: #4D4DE6; /* customBlue color */
+  border-radius: 20%;
+  height: 16px;
+  width: 16px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -4px; /* Adjust for proper alignment */
+}
+
+.input-range::-moz-range-thumb {
+  background-color: #4D4DE6; /* customBlue color */
+  border-radius: 20%;
+  height: 16px;
+  width: 16px;
+  cursor: pointer;
+}
+
+.input-range::-webkit-slider-runnable-track {
+  background-color: #4D4DE6; /* customBlue color */
+  height: 10px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.input-range::-moz-range-track {
+  background-color: #4D4DE6; /* customBlue color */
+  height: 4px;
+  border-radius: 2px;
+  cursor: pointer;
+}
