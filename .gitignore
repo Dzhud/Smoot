@@ -10,6 +10,13 @@
 # testing
 /coverage
 
+backend/uploads/
+backend/JUNKS/
+backend/node_modules/
+backend/.env
+smoot/JUNKZ/
+smoot/node_modules/
+
 # production
 /build
 
