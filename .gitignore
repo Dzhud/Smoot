@@ -13,6 +13,7 @@
 backend/uploads/
 backend/JUNKS/
 backend/node_modules/
+backend/dummyOutputFile.mp4
 backend/.env
 smoot/JUNKZ/
 smoot/node_modules/
