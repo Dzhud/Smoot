@@ -8,7 +8,7 @@ const express = require('express');
 const router = express.Router();
 
 
-
+//Works Fine after comparing with detecting silence in normal ffmpeg cli cmd.
 const detectSilence = (filePath, noiseLevel, silenceDuration) => {
     return new Promise((resolve, reject) => {
         const silenceTimestamps = [];
@@ -34,24 +34,47 @@ const detectSilence = (filePath, noiseLevel, silenceDuration) => {
     });
 };
 
+
 // Process video file.
-const processVideo = (inputPath, outputPath, silenceTimestamps) => {
+const processVideo = (inputPath, outputPath, silenceTimestamps, videoDuration) => {
     return new Promise((resolve, reject) => {
-        const filterComplexParts = silenceTimestamps.map((timestamp, index) => {
-            const { start, end } = timestamp;
-            console.log('\n\tStart:', start, 'End:', end);
+        if (silenceTimestamps.length === 0) {
+            console.log('No silence detected, skipping trimming.');
+            fs.copyFileSync(inputPath, outputPath);
+            return resolve();
+        }
+
+        let lastEnd = 0;
+        const nonSilentSegments = [];
+
+        for (const { start, end } of silenceTimestamps) {
+            if (lastEnd < start) {
+                nonSilentSegments.push({ start: lastEnd, end: start });
+            }
+            lastEnd = end;
+        }
+
+        // If there's still some video left after the last silence segment, keep it
+        if (lastEnd < videoDuration) {
+            nonSilentSegments.push({ start: lastEnd, end: videoDuration });
+        }
+
+        if (nonSilentSegments.length === 0) {
+            console.log('No non-silent segments detected.');
+            return reject(new Error('No non-silent parts found.'));
+        }
+
+        const filterComplexParts = nonSilentSegments.map(({ start, end }, index) => {
             return [
                 `[0:v]trim=start=${start}:end=${end},setpts=PTS-STARTPTS[v${index}]`,
                 `[0:a]atrim=start=${start}:end=${end},asetpts=PTS-STARTPTS[a${index}]`,
             ];
         });
 
-        const concatInputs = silenceTimestamps
-            .map((_, index) => `[v${index}][a${index}]`)
-            .join('');
+        const concatInputs = nonSilentSegments.map((_, index) => `[v${index}][a${index}]`).join('');
         const filterComplex = [
             ...filterComplexParts.flat(),
-            `${concatInputs}concat=n=${silenceTimestamps.length}:v=1:a=1[v][a]`,
+            `${concatInputs}concat=n=${nonSilentSegments.length}:v=1:a=1[v][a]`
         ].join(';');
 
         ffmpeg(inputPath)
@@ -63,6 +86,7 @@ const processVideo = (inputPath, outputPath, silenceTimestamps) => {
             .save(outputPath);
     });
 };
+
 
 const uploadVideo = async (req, res) => {
     const { noiseLevel, silenceDuration } = req.body;
@@ -133,6 +157,5 @@ module.exports = {
 };
 //Tidy DB record and responses e.g metdata etc
 // looks like the trimming is doing the opposite of what it should be doing
-// Test with frontend
-//Python script dat automates deletea
+//Python script dat automates delete
 //1 silence segments detected at noise tolerance level -60dB and minimum noise duration of 2 seconds in sample.mp4
