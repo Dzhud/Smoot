@@ -6,6 +6,7 @@ import {
 import ReactPlayer from "react-player";
 import VideoDropZone from "./videoDropZone.jsx";
 import VideoEditor from "./videoEditor.jsx";
+import VideoList from "./videoList.jsx";
 
 const Process = () => {
   const [videos, setVideos] = useState([]);
@@ -76,31 +77,19 @@ const Process = () => {
       console.log("Response data:", data);
 
       // Adjust based on the actual response structure
-      setProcessedVideo(data.video.editedFilePath); // If direct response
-      // setProcessedVideo(data.video.editedFilePath); // If wrapped response
+      setProcessedVideo(data.video.editedFilePath);
 
       // Update metadata
       setVideoMetadata({
-        videoDuration: data.videoDuration, // If direct response
-        processingTime: data.processingTime, // If direct response
-        cutsMade: data.cutsMade, // If direct response
-        requestId: data.requestId, // If direct response
-        originalFilePath: data.originalFilePath, // If direct response
-        editedFilePath: data.editedFilePath, // If direct response
-        silenceDetails: data.silenceDetails, // If direct response
-        fileSize: data.fileSize, // If direct response
-        tags: data.tags, // If direct response
-
-        // Uncomment the following lines if the response is wrapped
-        // videoDuration: data.video.videoDuration,
-        // processingTime: data.video.processingTime,
-        // cutsMade: data.video.cutsMade,
-        // requestId: data.video.requestId,
-        // originalFilePath: data.video.originalFilePath,
-        // editedFilePath: data.video.editedFilePath,
-        // silenceDetails: data.video.silenceDetails,
-        // fileSize: data.video.fileSize,
-        // tags: data.video.tags,
+         videoDuration: data.video.videoDuration,
+         processingTime: data.video.processingTime,
+         cutsMade: data.video.cutsMade,
+         requestId: data.video.requestId,
+         originalFilePath: data.video.originalFilePath,
+         editedFilePath: data.video.editedFilePath,
+         silenceDetails: data.video.silenceDetails,
+         fileSize: data.video.fileSize,
+         tags: data.video.tags,
       });
     } catch (error) {
       console.error("Error occurred:", error);
@@ -211,21 +200,21 @@ const Process = () => {
             {processedVideo && (
               <div className="mt-4">
                 <h2 className="text-xl font-semibold">Processed Video</h2>
-                <video controls src={processedVideo} className="mt-4 w-full" />
+                
+                <img src={`http://localhost:5000/api/videos/${videoMetadata.editedFilePath}`} alt="Processed Video Thumbnail" />
+
                 <div className="mt-4">
                   <h3 className="text-lg font-semibold">Video Metadata</h3>
-                  <p><strong>Video Duration:</strong> {videoMetadata.videoDuration}</p>
-                  <p><strong>Processing Time:</strong> {videoMetadata.processingTime}</p>
+                  <p><strong>Processing Time:</strong> {Math.round(videoMetadata.processingTime)} Milliseconds</p>
                   <p><strong>Cuts Made:</strong> {videoMetadata.cutsMade}</p>
                   <p><strong>Request ID:</strong> {videoMetadata.requestId}</p>
                   <p><strong>Original File Path:</strong> {videoMetadata.originalFilePath}</p>
                   <p><strong>Edited File Path:</strong> {videoMetadata.editedFilePath}</p>
-                  <p><strong>Silence Details:</strong> {JSON.stringify(videoMetadata.silenceDetails)}</p>
-                  <p><strong>File Size:</strong> {videoMetadata.fileSize}</p>
-                  <p><strong>Tags:</strong> {videoMetadata.tags.join(', ')}</p>
                 </div>
               </div>
             )}
+            
+            {<VideoList />}
 
             {errorMessage && (
               <div className="mt-4 text-red-500">
@@ -233,6 +222,12 @@ const Process = () => {
               </div>
             )}
           </div>
+
+
+
+
+
+
         </div>
       </div>
     </div>

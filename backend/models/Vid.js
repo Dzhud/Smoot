@@ -24,6 +24,8 @@ const VideoSchema = new mongoose.Schema({
         browser: { type: String },
         os: { type: String },
     },
+    noiseLevel: { type: String, required: true }, // Store the noise level used for silence detection
+    silenceDuration: { type: String, required: true }, // Store the silence duration used for silence detection
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false }, // Reference to User model
 }, { timestamps: true });
 

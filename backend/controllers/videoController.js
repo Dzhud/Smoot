@@ -29,16 +29,17 @@ const detectSilence = (filePath, noiseLevel, silenceDuration) => {
             })
             .on('end', () => resolve(silenceTimestamps))
             .on('error', (err) => reject(err))
-            .output('tao.mp4')
+            .output('dummyOutputFile.mp4')
             .run();
     });
 };
 
-// Process video file
+// Process video file.
 const processVideo = (inputPath, outputPath, silenceTimestamps) => {
     return new Promise((resolve, reject) => {
         const filterComplexParts = silenceTimestamps.map((timestamp, index) => {
             const { start, end } = timestamp;
+            console.log('\n\tStart:', start, 'End:', end);
             return [
                 `[0:v]trim=start=${start}:end=${end},setpts=PTS-STARTPTS[v${index}]`,
                 `[0:a]atrim=start=${start}:end=${end},asetpts=PTS-STARTPTS[a${index}]`,
@@ -66,6 +67,7 @@ const processVideo = (inputPath, outputPath, silenceTimestamps) => {
 const uploadVideo = async (req, res) => {
     const { noiseLevel, silenceDuration } = req.body;
     const inputFilePath = req.file.path;
+    const inputFilePathh = req.file.originalname;
 
     if (res.statusCode === 404) {
         return res.status(404).json({ message: 'Ouch! 400 Error!' });
@@ -78,7 +80,7 @@ const uploadVideo = async (req, res) => {
     try {
         const outputFilePath = path.join(
             path.dirname(inputFilePath),
-            `processed-${path.basename(inputFilePath)}`
+            `processed-${path.basename(inputFilePath)}.mp4`
         );
 
         const silenceTimestamps = await detectSilence(inputFilePath, noiseLevel, silenceDuration);
@@ -87,7 +89,8 @@ const uploadVideo = async (req, res) => {
         const processingTime = (Date.now() - startTime) / 60; // Time in minutes
 
         const video = await Video.create({
-            name: path.basename(inputFilePath),
+            /*name: path.basename(inputFilePath),*/
+            name: inputFilePathh,
             originalFilePath: inputFilePath,
             editedFilePath: outputFilePath,
             requestId,
@@ -95,6 +98,8 @@ const uploadVideo = async (req, res) => {
             durationRemoved: silenceTimestamps.reduce((acc, cur) => acc + (cur.end - cur.start), 0),
             cutsMade: silenceTimestamps.length,
             processingTime,
+            noiseLevel,
+            silenceDuration,
         });
 
         res.status(201).json({video, videoMetadata: video});
@@ -125,4 +130,9 @@ const getVideoByRequestId = async (req, res) => {
 
 module.exports = {
     uploadVideo, getVideoByRequestId
-}; 
+};
+//Tidy DB record and responses e.g metdata etc
+// looks like the trimming is doing the opposite of what it should be doing
+// Test with frontend
+//Python script dat automates deletea
+//1 silence segments detected at noise tolerance level -60dB and minimum noise duration of 2 seconds in sample.mp4
