@@ -71,35 +71,8 @@ const VideoList = () => {
             <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('name')}>
               Name {getSortIcon('name')}
             </th>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('status')}>
-              Status {getSortIcon('status')}
-            </th>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('originalFilePath')}>
-              Original File Path {getSortIcon('originalFilePath')}
-            </th>
             <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('editedFilePath')}>
               Edited File Path {getSortIcon('editedFilePath')}
-            </th>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('durationRemoved')}>
-              Duration Removed {getSortIcon('durationRemoved')}
-            </th>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('cutsMade')}>
-              Cuts Made {getSortIcon('cutsMade')}
-            </th>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('processingTime')}>
-              Processing Time {getSortIcon('processingTime')}
-            </th>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('downloadCount')}>
-              Download Count {getSortIcon('downloadCount')}
-            </th>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('isPublic')}>
-              Is Public {getSortIcon('isPublic')}
-            </th>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('noiseLevel')}>
-              Noise Level {getSortIcon('noiseLevel')}
-            </th>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('silenceDuration')}>
-              Silence Duration {getSortIcon('silenceDuration')}
             </th>
             <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('creationDate')}>
               Creation Date {getSortIcon('creationDate')}
@@ -110,16 +83,12 @@ const VideoList = () => {
           {filteredVideos.map((video) => (
             <tr key={video._id}>
               <td className="py-2 px-4 border-b">{video.name}</td>
-              <td className="py-2 px-4 border-b">{video.status}</td>
-              <td className="py-2 px-4 border-b">{video.originalFilePath}</td>
-              <td className="py-2 px-4 border-b">{video.editedFilePath}</td>
-              <td className="py-2 px-4 border-b">{Math.round(video.durationRemoved)}</td>
-              <td className="py-2 px-4 border-b">{video.cutsMade}</td>
-              <td className="py-2 px-4 border-b">{Math.round(video.processingTime)} ms</td>
-              <td className="py-2 px-4 border-b">{video.downloadCount}</td>
-              <td className="py-2 px-4 border-b">{video.isPublic ? 'Yes' : 'No'}</td>
-              <td className="py-2 px-4 border-b">{video.noiseLevel}</td>
-              <td className="py-2 px-4 border-b">{video.silenceDuration}</td>
+              <td className="py-2 px-4 border-b">
+                <video controls className="w-64 h-36">
+                  <source src={`http://localhost:5000/${video.editedFilePath}`} type="video/mp4" />
+               
+                </video>
+                </td>
               <td className="py-2 px-4 border-b">{new Date(video.creationDate).toLocaleDateString()}</td>
             </tr>
           ))}

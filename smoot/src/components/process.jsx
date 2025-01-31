@@ -223,11 +223,6 @@ const Process = () => {
             )}
           </div>
 
-
-
-
-
-
         </div>
       </div>
     </div>

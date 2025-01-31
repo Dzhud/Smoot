@@ -5,11 +5,16 @@ const videoRoutes = require('./routes/vidRoutes');
 const userRoutes = require('./routes/userRoutes');
 const connectDB = require('./config/db')
 const cors = require('cors');
+const path = require('path');
 
 dotenv.config(); // Load environment variables from .env
 
 const app = express();
 app.use(cors());
+
+// Serve static files from the 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // Middleware
 app.use(express.json());
