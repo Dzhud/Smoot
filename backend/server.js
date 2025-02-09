@@ -6,6 +6,7 @@ const userRoutes = require('./routes/userRoutes');
 const connectDB = require('./config/db')
 const cors = require('cors');
 const path = require('path');
+require("./workers/videoWorkers");
 
 dotenv.config(); // Load environment variables from .env
 

@@ -4,7 +4,7 @@ const VideoSchema = new mongoose.Schema({
 
     name: { type: String, required: true },
     creationDate: {type: Date, default: Date.now, },//Stored as a string (toLocaleDateString() format)
-    status: { type: String, enum: ['processing', 'completed', 'failed'], required: true, default: 'processing' },
+    status: { type: String, enum: ['queued', 'completed', 'failed'], required: true, default: 'queued' },
     originalFilePath: { type: String, required: true },//to store the location or URL of the original uploaded file on the server.
     editedFilePath: { type: String },//Store the actual file path or URL of the processed video instead of just using 'Download'.
     durationRemoved: { type: String, required: false },//Silent duration removed, stored as a string (e.g., 57.54 seconds).
