@@ -1,11 +1,12 @@
-const express = require('express');
+import express from 'express';
+import multer from 'multer';
+import { uploadVideo, getVideoByRequestId } from '../controllers/videoController.js';
+//import authMiddleware from '../middleware/authMiddleware.js';
+import Video from '../models/Vid.js';
+
 const router = express.Router();
-const multer = require('multer');
 
 const upload = multer({ dest: 'uploads/' });
-const { uploadVideo, getVideoByRequestId } = require('../controllers/videoController');
-//const authMiddleware = require('../middleware/authMiddleware');
-const Video = require('../models/Vid');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -17,27 +18,22 @@ const storage = multer.diskStorage({
     }
 });
 
-//router.post('/upload', uploadVideo);
+// Routes
 router.post('/upload', upload.single('name'), uploadVideo);
-//to detect silence
-//router.post('/detect-silence', upload.single('name'), uploadVideo);
-
 router.get('/:requestId', getVideoByRequestId);
 router.get('/', async (req, res) => {
-    try{
+    try {
         const videos = await Video.find();
         res.status(200).json(videos);
-    }
-     catch(err){
+    } catch (err) {
         res.status(500).json(err);
-     }
+    }
 });
 router.patch('/:id', async (req, res) => {
-    try{
-        const updatedVideo = await Video.findByIdAndUpdate(req.params.id, {$set: req.body}, {new:true});
+    try {
+        const updatedVideo = await Video.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
         res.status(200).json(updatedVideo);
-    }
-    catch(err){
+    } catch (err) {
         res.status(500).json(err);
     }
 });
@@ -55,9 +51,7 @@ router.delete('/:id', async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ message: "Internal server error" });
-    }}
-);
+    }
+});
 
-
-
-module.exports = router;
+export default router;

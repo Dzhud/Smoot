@@ -1,13 +1,15 @@
-const Video = require('../models/Vid');
-const { exec } = require('child_process');
-const path = require('path');
-const fs = require('fs');
-const ffmpeg = require('fluent-ffmpeg');
-const multer = require('multer');
-const express = require('express');
-const router = express.Router();
-const videoQueue = require("../queues/videoQueue");
+import Video from '../models/Vid.js';
+import { exec } from 'child_process';
+import path from 'path';
+import fs from 'fs';
+import ffmpeg from 'fluent-ffmpeg';
 
+import express from 'express';
+import videoQueue from '../queues/videoQueue.js';
+import { register } from 'module';
+
+
+const router = express.Router();
 
 //Works Fine after comparing with detecting silence in normal ffmpeg cli cmd.
 const detectSilence = (filePath, noiseLevel, silenceDuration) => {
@@ -90,9 +92,9 @@ const processVideo = (inputPath, outputPath, silenceTimestamps, videoDuration) =
 
 
 const uploadVideo = async (req, res) => {
-    const { noiseLevel, silenceDuration } = req.body;
+    const { noiseLevel, silenceDuration, name } = req.body;
     const inputFilePath = req.file.path;
-    const inputFilePathh = req.file.originalname;
+    const originalFileName = req.file.originalname;
 
     if (!inputFilePath) {
         return res.status(400).json({ message: 'No video file uploaded.' });
@@ -102,26 +104,27 @@ const uploadVideo = async (req, res) => {
 
     try {
         console.log("\tAdding job to queue:", {
+            name,
             inputFilePath,
-            inputFilePathh,
+            originalFileName,
             noiseLevel,
             silenceDuration,
             requestId
         });
         // Add job to the BullMQ queue
         await videoQueue.add("processVideo", {
+            name: originalFileName,
             inputFilePath,
-            inputFilePathh,
+            originalFileName,
             noiseLevel,
             silenceDuration,
             requestId,
         });
-        console.log("Job successfully added to queue");
+        console.log("\tJob successfully added to queue (controller)");
 
         // Respond immediately, without waiting for processing to complete
-        // I SHOULD PROLLY ADD MORE PARAMS TO THE RESPONSE lyk approx time to process.
         res.status(202).json({ message: "Video processing started", requestId,  status: 'queued',
-            inputFilePath,
+            originalFileName, noiseLevel, silenceDuration,
          });
         
     } catch (error) {
@@ -150,10 +153,11 @@ const getVideoByRequestId = async (req, res) => {
     }
 };
 
-module.exports = {
+export {
     uploadVideo, processVideo, detectSilence, getVideoByRequestId
 };
-
-//Chnage Status to 'Completed' maybe via a patch request in Worker file 
+//Check for real-time progress updates back and frontend
+//Parallelizing tasks (split video into chunks).
+    //Optimizing FFmpeg settings (change codec, compression).
 //Tidy DB record and responses e.g metdata etc
 //Python script dat automates delete

@@ -1,10 +1,13 @@
-const { Queue } = require("bullmq");
-const Redis = require("ioredis");
+import { Queue } from 'bullmq';
+import Redis from 'ioredis';
+import dotenv from 'dotenv';
+
+dotenv.config(); 
 
 // ✅ Create Redis connection using ioredis
 const connection = new Redis({
-    host: "127.0.0.1", // Ensure this matches your Redis setup
-    port: 6379,
+    host: process.env.REDIS_HOST, 
+    port: process.env.REDIS_PORT,
     maxRetriesPerRequest: null, // 🔥 Important: Prevent Redis conflicts
 });
 
@@ -13,4 +16,12 @@ connection.on("connect", () => console.log("\t✅ Redis Connected (Queue)"));
 
 const videoQueue = new Queue("videoQueue", { connection });
 
-module.exports = videoQueue;
+videoQueue.on("completed", (job) => {
+    console.log(`\t✅ Job ${job.id} completed`);
+});
+
+videoQueue.on("failed", (job, err) => {
+    console.error(`\t❌ Job ${job.id} failed:`, err);
+});
+
+export default videoQueue;

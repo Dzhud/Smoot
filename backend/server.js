@@ -1,12 +1,15 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const videoRoutes = require('./routes/vidRoutes');
-const userRoutes = require('./routes/userRoutes');
-const connectDB = require('./config/db')
-const cors = require('cors');
-const path = require('path');
-require("./workers/videoWorkers");
+import express from 'express';
+import dotenv from 'dotenv';
+import http from 'http';
+import videoRoutes from './routes/vidRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import connectDB from './config/db.js';
+import cors from 'cors';
+import path from 'path';
+import { getIo, initSocket } from './config/socket.js';
+import videoQueue from './queues/videoQueue.js';
+
+import './workers/videoWorkers.js'; // Start video processing workers
 
 dotenv.config(); // Load environment variables from .env
 
@@ -14,11 +17,12 @@ const app = express();
 app.use(cors());
 
 // Serve static files from the 'uploads' directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(path.dirname(new URL(import.meta.url).pathname), 'uploads')));
 
 
 // Middleware
 app.use(express.json());
+const server = http.createServer(app);
 /*
 app.get('*', (req, res) => {
     console.log(`Route not found: ${req.originalUrl}`);
@@ -26,18 +30,27 @@ app.get('*', (req, res) => {
 });*/
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('\t Connected to Express Server'))
-    .catch((err) => console.error('Error connecting to MongoDB:', err.message));
+connectDB();
 
+// Initialize WebSockets
+initSocket(server);
+const io = getIo(server); // Get the io instance after initialization
 
 // Routes
 app.use('/api/videos', videoRoutes);
 app.use('/api/users', userRoutes);
 
-// Start server
+//Redis job test
+videoQueue.getJobs(["waiting", "active", "delayed"])
+  .then(jobs => console.log("\t**** Current Jobs in Queue:", jobs))
+  .catch(err => console.error("\t Error fetching jobs:", err));
+
+
+// Start Express server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
-connectDB();
+server.listen(PORT, () => console.log(`\t Express Server running on http://localhost:${PORT}`));
+//app.listen(PORT, () => console.log(`\t Express Server running on http://localhost:${PORT}`));
+
+
 
 
