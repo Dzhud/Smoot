@@ -7,6 +7,10 @@ module.exports = {
     extend: {
       colors: {
         customBlue: '#4D4DE6',
+        customLight1: '#B2B2F9',
+        customLight2: '#8080F0',
+        customLight3: '#1A1A4D',
+        customLight4: '#0F0F26',
       },
       '.react-player': {
         borderRadius: '10px',

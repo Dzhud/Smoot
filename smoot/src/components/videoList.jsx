@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+
 const VideoList = () => {
   const [videos, setVideos] = useState([]);
   const [filteredVideos, setFilteredVideos] = useState([]);
@@ -57,9 +58,13 @@ const VideoList = () => {
     }
   };
 
+
+
+
   return (
     <div className="container mx-auto mt-8">
-      <h2 className="text-2xl font-semibold mb-4">Video List</h2>
+      <h2 className="text-2xl font-semibold mb-4">Processed Videos</h2>
+      
       {errorMessage && (
         <div className="text-red-500 mb-4">
           <p>{errorMessage}</p>
@@ -80,6 +85,8 @@ const VideoList = () => {
           </tr>
         </thead>
         <tbody>
+
+
           {filteredVideos.map((video) => (
             <tr key={video._id}>
               <td className="py-2 px-4 border-b">{video.name}</td>

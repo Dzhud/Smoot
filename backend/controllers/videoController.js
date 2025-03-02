@@ -82,7 +82,11 @@ const processVideo = (inputPath, outputPath, silenceTimestamps, videoDuration) =
 
         ffmpeg(inputPath)
             .complexFilter(filterComplex)
-            .outputOptions(['-map [v]', '-map [a]'])
+            .outputOptions(['-map [v]', '-map [a]',
+                '-c:v libx264',   // Use efficient H.264 codec
+                '-preset ultrafast',  // Faster processing
+                '-crf 23'  // Balances quality and compression
+            ])
             .on('start', (commandLine) => console.log('FFmpeg command:', commandLine))
             .on('error', (err) => reject(err))
             .on('end', () => resolve())
@@ -154,10 +158,11 @@ const getVideoByRequestId = async (req, res) => {
 };
 
 export {
-    uploadVideo, processVideo, detectSilence, getVideoByRequestId
+    uploadVideo, processVideo, detectSilence, getVideoByRequestId,
+
 };
-//Check for real-time progress updates back and frontend
-//Parallelizing tasks (split video into chunks).
-    //Optimizing FFmpeg settings (change codec, compression).
+//Add UserID to VideoProcess
+    //
+//GooglE login integration
 //Tidy DB record and responses e.g metdata etc
 //Python script dat automates delete

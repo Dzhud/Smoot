@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import VideoEditor from './videoEditor';
 
 
 const VideoDropZone = ({ onFilesAdded }) => {
@@ -28,12 +27,12 @@ const VideoDropZone = ({ onFilesAdded }) => {
   });
 
   return (
-    <div {...getRootProps()} className="border-2 border-dashed border-gray-400 rounded p-6 text-center cursor-pointer">
+    <div {...getRootProps()} className="border-2 border-dashed border-customBlue rounded p-6 text-center cursor-pointer">
       <input {...getInputProps()} />
       {isDragActive ? (
-        <p className="text-gray-600">Drop the videos here ...</p>
+        <p className=" text-customBlue font-extrabold">Drop the videos here ...</p>
       ) : (
-        <p className="text-gray-600">Drag & drop some videos here, or click to select videos</p>
+        <p className=" text-customBlue font-extrabold">Drag & drop some videos here, or click to select videos</p>
       )}
       {alert && (
         <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">

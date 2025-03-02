@@ -20,8 +20,8 @@ connection.on("error", (err) => console.error("\t❌ Redis Error:", err));
 const videoWorkers = new Worker(
     "videoQueue",
     async (job) => {
-        const io = getIo(); // ✅ Call getIo() inside the worker function
-        const { inputFilePath, name, noiseLevel, silenceDuration, requestId } = job.data;
+        const io = getIo();
+        const { inputFilePath, name, noiseLevel,  silenceDuration, requestId } = job.data;
 
         try {
             io.emit("processing_started", { requestId, progress: 10, message: "Processing Started" });
@@ -31,7 +31,7 @@ const videoWorkers = new Worker(
             // Step 1: Detect Silence
             console.log(`\t🚀 Detecting silence in: ${inputFilePath}`);
             const silenceTimestamps = await detectSilence(inputFilePath, noiseLevel, silenceDuration);
-            io.emit("processing_progress", { requestId, progress: 80, message: "Silence detection completed" });
+            io.emit("processing_progress", { requestId, progress: 50, message: "Silence detection completed" });
             console.log(`\t🔹 Silence detected:`, silenceTimestamps);
             
             // Step 2: Process Video
@@ -71,5 +71,5 @@ const videoWorkers = new Worker(
 
 console.log("\t🎥 Redis Video Worker is running...");
 
-// ✅ Export the worker for use in other files
+
 export default videoWorkers;

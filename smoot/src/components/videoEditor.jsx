@@ -35,6 +35,7 @@ const VideoEditor = ({ url }) => {
     setShowPlayer(false);
     };
 
+  
   if (!showPlayer) return null;
 
   return (
@@ -49,7 +50,7 @@ const VideoEditor = ({ url }) => {
           volume={volume}
           muted={muted}
           playbackRate={playbackRate}
-          onProgress={({ playedSeconds }) => setSeekTime(playedSeconds)}
+          onProgress={({ playedSeconds }) => {setSeekTime(playedSeconds)}}
           controls={false}
           width="100%"
           height="auto"
