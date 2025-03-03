@@ -17,11 +17,14 @@ const connection = new Redis({
 
 connection.on("error", (err) => console.error("\t❌ Redis Error:", err));
 
+// Function to convert bytes to megabytes
+const bytesToMB = (bytes) => (bytes / (1024 * 1024)).toFixed(2);
+
 const videoWorkers = new Worker(
     "videoQueue",
     async (job) => {
         const io = getIo();
-        const { inputFilePath, name, noiseLevel,  silenceDuration, requestId } = job.data;
+        const { inputFilePath, name, noiseLevel, silenceDuration, requestId, fileSize } = job.data;
 
         try {
             io.emit("processing_started", { requestId, progress: 10, message: "Processing Started" });
@@ -41,24 +44,33 @@ const videoWorkers = new Worker(
             console.log(`\t🔹 Processing Time(ms):`, processingTime);
             console.log("\t🛠 Job Data:", job.data);
 
+            const fileSizeMB = bytesToMB(fileSize);
+            console.log(`\t🔹 File Size: ${fileSizeMB} MB`);
 
             // Step 3: Save video details to MongoDB
             const video = await Video.create({
-                name: name,
-                originalFilePath: inputFilePath,
-                editedFilePath: outputFilePath,
                 requestId,
-                silenceDetails: silenceTimestamps,
-                durationRemoved: silenceTimestamps.reduce((acc, cur) => acc + (cur.end - cur.start), 0),
-                cutsMade: silenceTimestamps.length,
-                processingTime,
-                noiseLevel,
-                silenceDuration,
-                status: "completed",
-            });
+                silenceParams: { noiseLevel, silenceDuration },
+                metaData: {
+                    name,
+                    videoDuration: 0, // Placeholder, update after processing
+                    fileSize: fileSizeMB,
+                    thumbnailPath: '', // Placeholder, update after processing
+                },
+                processData: {
+                    status: 'completed',
+                    originalFilePath: inputFilePath,
+                    editedFilePath: outputFilePath,
+                    durationRemoved: silenceTimestamps.reduce((acc, cur) => acc + (cur.end - cur.start), 0),
+                    cutsMade: silenceTimestamps.length,
+                    silenceDetails: silenceTimestamps,
+                    processingTime,
+                    errorMessage: '',
+                }
+        });
 
             io.emit("processing_complete", { requestId, progress: 100, message: "Video processing complete!", video });
-            console.log(`✅ Video saved to DB: ${video.requestId}`);
+            console.log(`\n✅ Video saved to DB: ${video.requestId}`);
 
         } catch (error) {
             io.emit("processing_failed", { requestId, progress: 0, error: error.message });
@@ -70,6 +82,5 @@ const videoWorkers = new Worker(
 );
 
 console.log("\t🎥 Redis Video Worker is running...");
-
 
 export default videoWorkers;

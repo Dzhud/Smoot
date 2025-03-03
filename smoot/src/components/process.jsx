@@ -121,15 +121,17 @@ const Process = () => {
                     <div key={index} className="flex flex-col space-y-4">
                       <button
                         className="relative rounded-lg overflow-hidden hover:cursor-pointer flex-col space-y-2"
-                        onClick={() => setSelectedVideo(video.url)}
-                      >
-                        <ReactPlayer
-                          url={video.url}
-                          controls
-                          width="320px"
-                          height="180px"
-                          className="rounded-lg"
-                        />
+                        onClick={() => setSelectedVideo(video.url)}>
+                        <div className=" p-2 rounded-2xl">
+                          <ReactPlayer
+                            url={video.url}
+                            controls
+                            //width="320px"
+                            width='full'
+                            height="180px"
+                            className="rounded-2xl"
+                          />
+                        </div>
                         <p className="text-customBlue font-extrabold">
                           {video.file.name}
                         </p>

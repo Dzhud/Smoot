@@ -29,23 +29,26 @@ router.get('/', async (req, res) => {
         res.status(500).json(err);
     }
 });
-router.patch('/:id', async (req, res) => {
+router.patch('/:requestId', async (req, res) => {
     try {
-        const updatedVideo = await Video.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+        const updatedVideo = await Video.findOneAndUpdate({ requestId: req.params.requestId }, { $set: req.body }, { new: true });
+        if (!updatedVideo) {
+            return res.status(404).json({ message: "Video not found" });
+        }
         res.status(200).json(updatedVideo);
     } catch (err) {
         res.status(500).json(err);
     }
 });
-router.delete('/:id', async (req, res) => {
+router.delete('/:requestId', async (req, res) => {
     try {
         // Fetch the video name before deleting
-        const video = await Video.findById(req.params.id, "name");
+        const video = await Video.findOne({ requestId: req.params.requestId }, "metaData");
         if (!video) {
             return res.status(404).json({ message: "Video not found" });
         }
-        const videoName = video.name;
-        await Video.findByIdAndDelete(req.params.id);
+        const videoName = video.metaData.name;
+        await Video.findOneAndDelete({ requestId: req.params.requestId });
 
         res.status(200).json(`Video "${videoName}" has been deleted!`);
     } catch (err) {

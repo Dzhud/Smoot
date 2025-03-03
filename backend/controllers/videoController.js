@@ -99,6 +99,7 @@ const uploadVideo = async (req, res) => {
     const { noiseLevel, silenceDuration, name } = req.body;
     const inputFilePath = req.file.path;
     const originalFileName = req.file.originalname;
+    const fileSize = req.file.size;
 
     if (!inputFilePath) {
         return res.status(400).json({ message: 'No video file uploaded.' });
@@ -113,7 +114,8 @@ const uploadVideo = async (req, res) => {
             originalFileName,
             noiseLevel,
             silenceDuration,
-            requestId
+            requestId,
+            fileSize
         });
         // Add job to the BullMQ queue
         await videoQueue.add("processVideo", {
@@ -123,6 +125,7 @@ const uploadVideo = async (req, res) => {
             noiseLevel,
             silenceDuration,
             requestId,
+            fileSize
         });
         console.log("\tJob successfully added to queue (controller)");
 
