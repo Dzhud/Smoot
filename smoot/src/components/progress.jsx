@@ -35,7 +35,7 @@ const VideoProgress = ({ requestId }) => {
             <h2 className="text-xl font-semibold">{status}</h2>
             <div className="w-full bg-gray-200 rounded-full h-4 mt-2">
                 <div
-                    className="bg-blue-500 h-4 rounded-full"
+                    className="bg-customLight3 h-4 rounded-full transition-all duration-500 ease-in-out"
                     style={{ width: `${progress}%` }}
                 ></div>
             </div>

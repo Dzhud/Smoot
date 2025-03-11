@@ -22,7 +22,7 @@ const Sidebar = () => {
     ];
 
     return (
-        <div className="fixed top-0 left-0 h-full bg-customLight3 text-white p-4 rounded-r-lg">
+        <div className="fixed top-0 left-0 h-full bg-customLight3 text-white p-4 rounded-r-2xl shadow-lg">
             <div className="flex flex-col space-y-4">
                 {features.map(({ icon: Icon, label, enabled }, index) => (
                     <div key={index} className="flex items-center space-x-2">
@@ -30,9 +30,9 @@ const Sidebar = () => {
                         <span className={`text-sm font-bold ${enabled ? 'text-white' : 'text-gray-500'}`}>
                             {label}
                         </span>
-                        {!enabled && (
+                      {/*  {!enabled && (
                             <span className="text-xs text-gray-400 ml-2">(Coming Soon)</span>
-                        )}
+                        )} */}
                     </div>
                 ))}
             </div>

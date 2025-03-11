@@ -2,10 +2,21 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcrypt'; // For password hashing
 
 const UserSchema = new mongoose.Schema({
-    name: {
+    firstName: {
         type: String,
         required: true,
         trim: true, // Remove whitespace from the name
+    },
+    lastName: {
+        type: String,
+        required: true,
+        trim: true, // Remove whitespace from the name
+    },
+    username: {
+        type: String,
+        required: true,
+        unique: true, // Ensure no duplicate usernames
+        trim: true, // Remove whitespace from the username
     },
     email: {
         type: String,
@@ -18,7 +29,6 @@ const UserSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        //minlength: 8, // Enforce minimum password length
         select: false, // Do not return the password in queries by default
     },
     role: {
@@ -26,9 +36,16 @@ const UserSchema = new mongoose.Schema({
         enum: ['user', 'admin'], // Allow different roles for users
         default: 'user',
     },
+    profilePicture: {
+        type: String,
+        default: '', // URL to the user's profile picture
+    },
     createdAt: {
         type: Date,
         default: Date.now,
+    },
+    lastLogin: {
+        type: Date,
     },
     isVerified: {
         type: Boolean,
@@ -46,7 +63,6 @@ const UserSchema = new mongoose.Schema({
 UserSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
     const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
     next();
 });
 

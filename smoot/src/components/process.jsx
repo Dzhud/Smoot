@@ -1,19 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactPlayer from "react-player";
 import VideoDropZone from "./videoDropZone.jsx";
-//import VideoEditor from "./videoEditor.jsx";
 import VideoList from "./videoList.jsx";
 import Sidebar from "./sidebar.jsx";
 import VideoProgress from "./progress.jsx";
+import io from "socket.io-client";
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
 
+const socket = io("http://localhost:5000");
 
 const Process = () => {
   const [videos, setVideos] = useState([]);
   const [selectedVideo, setSelectedVideo] = useState(null);
-  const [processedVideo, setProcessedVideo] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [requestId, setRequestId] = useState(null);
+  const [processingComplete, setProcessingComplete] = useState(false);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   // Inputs for silence detection
   const [noiseLevel, setNoiseLevel] = useState("-30");
@@ -27,6 +33,66 @@ const Process = () => {
     silenceDuration: null,
     status: null,
   });
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const authToken = sessionStorage.getItem('authToken');
+    if (!authToken) {
+      navigate('/login');
+      return;
+    }
+
+    // Fetch user data
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/users/me', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+
+        const data = await response.json();
+        setUser(data);
+        console.log('Authtoken:', authToken);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        navigate('/login');
+      }
+    };
+
+    fetchUserData();
+  }, [navigate]);
+
+  useEffect(() => {
+    const handleProgressUpdate = (data) => {
+      if (data.requestId === requestId) {
+        if (data.progress === 100) {
+          setProcessingComplete(true);
+          setIsProcessing(false);
+
+          // Display toast notification
+          toast.success(
+            <div>
+              Silence Removal Completed 🎉
+            </div>,
+            { autoClose: 10000 } // Auto close after 10 seconds
+          );
+        }
+      }
+    };
+
+    socket.on("processing_complete", handleProgressUpdate);
+
+    return () => {
+      socket.off("processing_complete", handleProgressUpdate);
+    };
+  }, [requestId, videoMetadata]);
 
   const handleFilesAdded = (files) => {
     if (files.length > 0) {
@@ -61,23 +127,17 @@ const Process = () => {
     setErrorMessage(null);
 
     try {
-      {/*console.log("Sending request to /api/videos/upload");*/}
       const response = await fetch("http://localhost:5000/api/videos/upload", {
         method: "POST",
         body: formData,
       });
-
-      console.log("Response received:", response);
 
       if (!response.ok) {
         throw new Error("Failed to process the video.");
       }
 
       const data = await response.json();
-      console.log("Response data:", data);
-
       setRequestId(data.requestId);
-
 
       // Update metadata
       setVideoMetadata({
@@ -90,131 +150,131 @@ const Process = () => {
     } catch (error) {
       console.error("Error occurred:", error);
       setErrorMessage("An error occurred while processing the video. Please try again.");
-    } finally {
       setIsProcessing(false);
     }
-    for (let pair of formData.entries()) {
-        console.log(`\tForm Entries: ${pair[0]}, ${pair[1]}`);
-      }
+  };
+  const handleSignOut = () => {
+    // Clear user authentication token or session
+    sessionStorage.removeItem('authToken'); // Assuming the token is stored in sessionStorage
+    navigate('/login'); // Redirect to login page
   };
 
   return (
     <div>
       <div id="header">
-        <div className="bg-customBlue">Logo Should Be Here</div>
+        <div className="bg-customBlue">
+          Logo Should Be Here
+          
+          <button onClick={handleSignOut} className="bg-red-500 text-white p-2 rounded-lg"
+          style={{ float: 'right', marginRight: '1rem' }}>
+            Sign Out</button>
+        </div>
+        
       </div>
       <div className="flex-1 p-4 min-h-screen">
-      {<Sidebar />}
-      {/* main body*/}
-      <div className="flex-1 ml-64 p-4 h-full">
-      <div className="relative flex flex-row items-start space-y-4 p-4">
-        <div className="flex bg-zinc-50">
-          <div className="flex flex-col m-2 pl-10 border-l-4 border-white-500">
-            <h1 className="text-2xl font-bold mb-4">Video Upload</h1>
-            <VideoDropZone onFilesAdded={handleFilesAdded} />
+        <Sidebar />
+        <div className="flex-1 ml-64 p-4 h-full">
+          <div className="relative flex flex-row items-start space-y-4 p-4">
+            <div className="flex bg-zinc-50">
+              <div className="flex flex-col m-2 pl-10 border-l-4 border-white-500">
+                <h1 className="text-2xl font-bold mb-4">Video Upload</h1>
+                <VideoDropZone onFilesAdded={handleFilesAdded} />
+                {user ? ( <div className="text-customBlue">Welcome, {user.username || user.email}</div>
+                          ) : (
+                            <p>Loading user data...</p>
+                          )}
 
-            {videos.length > 0 && (
-              <div className="mt-4">
-                <h2 className="text-xl font-semibold">Uploaded Video</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                  {videos.map((video, index) => (
-                    <div key={index} className="flex flex-col space-y-4">
-                      <button
-                        className="relative rounded-lg overflow-hidden hover:cursor-pointer flex-col space-y-2"
-                        onClick={() => setSelectedVideo(video.url)}>
-                        <div className=" p-2 rounded-2xl">
-                          <ReactPlayer
-                            url={video.url}
-                            controls
-                            //width="320px"
-                            width='full'
-                            height="180px"
-                            className="rounded-2xl"
-                          />
-                        </div>
-                        <p className="text-customBlue font-extrabold">
-                          {video.file.name}
-                        </p>
-                      </button>
-
-                      {selectedVideo === video.url && (
-                        <div className="flex flex-row mt-4 space-x-4">
-                          <div className="mt-4">
-                            <label htmlFor="noiseLevel" className="block text-sm font-medium text-gray-700">
-                              Noise Level (dB)
-                            </label>
-                            <select
-                              id="noiseLevel"
-                              value={noiseLevel}
-                              onChange={(e) => setNoiseLevel(e.target.value)}
-                              className="border border-gray-300 rounded px-2 py-1 mt-1"
-                            >
-                              {Array.from({ length: 81 }, (_, i) => -90 + i).map((level) => (
-                                <option key={level} value={level}>
-                                  {level} dB
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div className="mt-4">
-                            <label htmlFor="silenceDuration" className="block text-sm font-medium text-gray-700">
-                              Silence Duration (seconds)
-                            </label>
-                            <select
-                              id="silenceDuration"
-                              value={silenceDuration}
-                              onChange={(e) => setSilenceDuration(e.target.value)}
-                              className="border border-gray-300 rounded px-2 py-1 mt-1"
-                            >
-                              {Array.from({ length: 5 }, (_, i) => i + 1).map((duration) => (
-                                <option key={duration} value={duration}>
-                                  {duration} seconds
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
+                {videos.length > 0 && (
+                  <div className="mt-4" >
+                    <h2 className="text-xl font-semibold">Uploaded Video</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4" id='player'>
+                      {videos.map((video, index) => (
+                        <div key={index} className="flex flex-col space-y-4">
                           <button
-                            className="mt-2 p-2 bg-green-500 text-white rounded"
-                            onClick={handleSilenceVideo}
-                            disabled={isProcessing}
-                          >
-                            {isProcessing ? "Processing..." : "Remove Silence"}
+                            className="relative rounded-lg overflow-hidden hover:cursor-pointer flex-col space-y-2"
+                            onClick={() => setSelectedVideo(video.url)}>
+                            <div className="p-2 rounded-2xl overflow-hidden">
+                              <ReactPlayer
+                                url={video.url}
+                                controls
+                                width='full'
+                                height="180px"
+                                className="react-player"
+                                style={{ borderRadius: '1rem', overflow: 'hidden', objectFit: 'cover' }}
+                              />
+                            </div>
+                            <p className="text-customBlue font-extrabold">
+                              {video.file.name}
+                            </p>
                           </button>
+
+                          {selectedVideo === video.url && (
+                            <div className="flex flex-row mt-4 space-x-4" id='silentParams'>
+                              <div className="mt-4">
+                                <label htmlFor="noiseLevel" className="block text-sm font-medium text-gray-700">
+                                  Noise Level (dB)
+                                </label>
+                                <select
+                                  id="noiseLevel"
+                                  value={noiseLevel}
+                                  onChange={(e) => setNoiseLevel(e.target.value)}
+                                  className="border border-gray-300 rounded px-2 py-1 mt-1"
+                                >
+                                  {Array.from({ length: 81 }, (_, i) => -90 + i).map((level) => (
+                                    <option key={level} value={level}>
+                                      {level} dB
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div className="mt-4">
+                                <label htmlFor="silenceDuration" className="block text-sm font-medium text-gray-700">
+                                  Silence Duration (seconds)
+                                </label>
+                                <select
+                                  id="silenceDuration"
+                                  value={silenceDuration}
+                                  onChange={(e) => setSilenceDuration(e.target.value)}
+                                  className="border border-gray-300 rounded px-2 py-1 mt-1"
+                                >
+                                  {Array.from({ length: 5 }, (_, i) => i + 1).map((duration) => (
+                                    <option key={duration} value={duration}>
+                                      {duration} seconds
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <button
+                                className="mt-2 p-2 bg-green-500 text-white rounded"
+                                onClick={handleSilenceVideo}
+                                disabled={isProcessing}
+                              >
+                                {isProcessing ? "Processing..." : "Remove Silence"}
+                              </button>
+                            </div>
+                          )}
                         </div>
-                        
-                      )}
-                      
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
 
-            {videoMetadata.requestId && (
-              <div className="mt-4">
-                <h2 className="text-xl font-semibold">Processing Status</h2>
-                <p><strong>Request ID:</strong> {videoMetadata.requestId}</p>
-                <p><strong>Original File Name:</strong> {videoMetadata.originalFileName}</p>
-                <p><strong>Noise Level:</strong> {videoMetadata.noiseLevel}</p>
-                <p><strong>Silence Duration:</strong> {videoMetadata.silenceDuration}</p>
-                <p><strong>Status:</strong> {videoMetadata.status}</p>
-              </div>
-            )}
+               
 
-            {requestId && <VideoProgress requestId={requestId} />}
-            
-            {errorMessage && (<div className="mt-4 text-red-500"><p>{errorMessage}</p></div>)}
-            {<VideoList />}
+                {!processingComplete && requestId && <VideoProgress requestId={requestId} />}
+                
+                {errorMessage && (<div className="mt-4 text-red-500"><p>{errorMessage}</p></div>)}
+                <VideoList />
+              </div>
             </div>
-          </div>
           </div>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };
 
 export default Process;
-

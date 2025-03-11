@@ -89,14 +89,14 @@ const VideoList = () => {
 
           {filteredVideos.map((video) => (
             <tr key={video._id}>
-              <td className="py-2 px-4 border-b">{video.name}</td>
+              <td className="py-2 px-4 border-b w-5">{video.metaData.name}</td>
               <td className="py-2 px-4 border-b">
-                <video controls className="w-64 h-36">
-                  <source src={`http://localhost:5000/${video.editedFilePath}`} type="video/mp4" />
+                <video controls className="w-64 h-36 rounded-lg">
+                  <source src={`http://localhost:5000/${video.processData.editedFilePath}`} type="video/mp4" />
                
                 </video>
                 </td>
-              <td className="py-2 px-4 border-b">{new Date(video.creationDate).toLocaleDateString()}</td>
+              <td className="py-2 px-4 border-b">{new Date(video.createdAt).toLocaleDateString()}</td>
             </tr>
           ))}
         </tbody>

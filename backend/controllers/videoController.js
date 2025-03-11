@@ -165,7 +165,4 @@ export {
 
 };
 //Add UserID to VideoProcess
-    //
 //GooglE login integration
-//Tidy DB record and responses e.g metdata etc
-//Python script dat automates delete
