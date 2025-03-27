@@ -94,44 +94,54 @@ const processVideo = (inputPath, outputPath, silenceTimestamps, videoDuration) =
     });
 };
 
-
 const uploadVideo = async (req, res) => {
-    const { noiseLevel, silenceDuration, name } = req.body;
+    const { noiseLevel, silenceDuration, name, videoDuration } = req.body;
     const inputFilePath = req.file.path;
     const originalFileName = req.file.originalname;
     const fileSize = req.file.size;
+    
+    const user = req.user.userId;
+    console.log("\tController User ID is :", user);
 
     if (!inputFilePath) {
         return res.status(400).json({ message: 'No video file uploaded.' });
+    }
+
+    if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized. Please log in." });
     }
 
     const requestId = Math.random().toString(36).substring(2, 10);
 
     try {
         console.log("\tAdding job to queue:", {
+            user,
             name,
             inputFilePath,
             originalFileName,
             noiseLevel,
             silenceDuration,
             requestId,
-            fileSize
+            fileSize,
+            videoDuration: Number(videoDuration),
         });
         // Add job to the BullMQ queue
         await videoQueue.add("processVideo", {
+            user: user,
             name: originalFileName,
             inputFilePath,
             originalFileName,
             noiseLevel,
             silenceDuration,
             requestId,
-            fileSize
+            fileSize,
+            videoDuration: Number(videoDuration)
         });
         console.log("\tJob successfully added to queue (controller)");
 
         // Respond immediately, without waiting for processing to complete
         res.status(202).json({ message: "Video processing started", requestId,  status: 'queued',
-            originalFileName, noiseLevel, silenceDuration,
+            originalFileName, noiseLevel, silenceDuration, user: req.user._id, videoDuration
          });
         
     } catch (error) {
@@ -160,9 +170,62 @@ const getVideoByRequestId = async (req, res) => {
     }
 };
 
+const allVids = async (req, res) => {
+    try {
+        const videos = await Video.find();
+        res.status(200).json(videos);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+}; 
+/*
+async (req, res) => {
+    try {
+        const userId = req.user._id; // Get authenticated user ID
+
+        const videos = await Video.find({ user: userId }).populate('user', 'username email');
+
+        res.status(200).json(videos);
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+*/
+
+const updateSingleVid = async (req, res) => {
+    try {
+        const updatedVideo = await Video.findOneAndUpdate({ requestId: req.params.requestId }, { $set: req.body }, { new: true });
+        if (!updatedVideo) {
+            return res.status(404).json({ message: "Video not found" });
+        }
+        res.status(200).json(updatedVideo);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+};
+
+const delSingleVid = async (req, res) => {
+    try {
+        // Fetch the video name before deleting
+        const video = await Video.findOne({ requestId: req.params.requestId }, "metaData");
+        if (!video) {
+            return res.status(404).json({ message: "Video not found" });
+        }
+        const videoName = video.metaData.name;
+        await Video.findOneAndDelete({ requestId: req.params.requestId });
+
+        res.status(200).json(`Video "${videoName}" has been deleted!`);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+    
 export {
-    uploadVideo, processVideo, detectSilence, getVideoByRequestId,
+    uploadVideo, processVideo, detectSilence, 
+    allVids, updateSingleVid, delSingleVid, getVideoByRequestId,
 
 };
+//Address disjinted paylord to show nechanges in the backend
 //Add UserID to VideoProcess
 //GooglE login integration

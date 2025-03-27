@@ -66,6 +66,13 @@ UserSchema.pre('save', async function (next) {
     next();
 });
 
+//Cascade Delete Videos When a User is Deleted
+UserSchema.pre('remove', async function (next) {
+    await mongoose.model('Video').deleteMany({ user: this._id });
+    next();
+});
+
+
 // Method to compare passwords during login
 UserSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);

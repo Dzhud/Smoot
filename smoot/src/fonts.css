@@ -1,0 +1,9 @@
+@font-face {
+  font-family: 'Amanda Rose';
+  src: url('./Amanda Rose.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'Greek Freak';
+  src: url('./Greek-Freak.ttf') format('truetype');
+}

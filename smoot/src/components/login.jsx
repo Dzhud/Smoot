@@ -22,12 +22,16 @@ const Login = () => {
       });
 
       const data = await response.json();
+      sessionStorage.setItem('authToken', data.token);
+      //console.log("Stored Token:", sessionStorage.getItem('authToken'));
       if (response.ok) {
         toast.success('Login successful!', { autoClose: 1500, onClose: () => navigate('/process') });
-        console.log(`\t\t:)${sessionStorage.getItem('authToken')}`);
+        //console.log(`\t\tAuthToken: ${sessionStorage.getItem('authToken')}`);
+        
       }
        else {
         setError(data.message);
+        console.log(`\t\tError Message:${data.message}`)
       }
     } catch (error) {
       console.error('Error during login:', error);

@@ -1,6 +1,11 @@
 import mongoose from 'mongoose';
 
 const VideoSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // Reference to the User model
+        required: true,
+    },
     metaData: {
         name: { type: String, required: true },
         videoDuration: { type: Number }, // Store the total duration (in seconds) of the original video.
@@ -33,7 +38,7 @@ const VideoSchema = new mongoose.Schema({
         silenceDuration: { type: String, required: true },
     },
     requestId: { type: String, required: false, unique: true }, // Unique identifier for the process, generated using Math.random().
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false }, // Reference to User model
+
 }, { timestamps: true });
 
 const Video = mongoose.model('Video', VideoSchema);

@@ -20,8 +20,8 @@ const registerUser = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        console.log('Plaintext Password:', password);
-        console.log('Generated Hashed Password:', hashedPassword);
+        //console.log('Plaintext Password:', password);
+        //console.log('Generated Hashed Password:', hashedPassword);
 
         // Create new user
         const user = new User({
@@ -29,7 +29,7 @@ const registerUser = async (req, res) => {
             lastName,
             username,
             email,
-            password: hashedPassword,  // Ensure this is correctly set
+            password: hashedPassword,
         });
 
         // Save user to the database
@@ -61,19 +61,19 @@ const loginUser = async (req, res) => {
         //console.log('Provided password:', password);
 
         const isMatch = await bcrypt.compare(password, user.password);
-        //console.log('Password match result:', isMatch); // Log the result of the password comparison
+        console.log('Password match result:', isMatch); // Log the result of the password comparison
 
         if (!isMatch) {
             console.error('Password does not match');
             throw new Error('Invalid email or password');
         }
 
-        //console.log('JWT_SECRET:', process.env.JWT_SECRET);
+        console.log('JWT_SECRET:', process.env.JWT_SECRET);
 
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
             expiresIn: '1d',
         });
-        //console.log('Generated JWT token:', token);
+        console.log('Generated JWT token:', token);
 
         res.json({ token });
     } catch (error) {
@@ -84,8 +84,8 @@ const loginUser = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).select('-password');
-        console.log('User data:', user); // Debugging log
+        const user = await User.findById(req.user.userId).select('-password');
+        //console.log('User data:', user); // Debugging log
         res.json(user || {});  // Send back the user data
     } catch (error) {
         console.error('Error fetching user profile:', error);

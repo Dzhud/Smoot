@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { getIo } from '../config/socket.js';
 import Video from '../models/Vid.js';
 import { detectSilence, processVideo } from '../controllers/videoController.js';
+import mongoose, { mongo } from 'mongoose';
 
 dotenv.config();
 
@@ -24,7 +25,8 @@ const videoWorkers = new Worker(
     "videoQueue",
     async (job) => {
         const io = getIo();
-        const { inputFilePath, name, noiseLevel, silenceDuration, requestId, fileSize } = job.data;
+        const { inputFilePath, name, noiseLevel, silenceDuration, requestId, 
+            fileSize, user, videoDuration} = job.data;
 
         try {
             io.emit("processing_started", { requestId, progress: 10, message: "Processing Started" });
@@ -47,13 +49,23 @@ const videoWorkers = new Worker(
             const fileSizeMB = bytesToMB(fileSize);
             console.log(`\t🔹 File Size: ${fileSizeMB} MB`);
 
+            
+            if (!user || typeof user !== 'string' || !mongoose.isValidObjectId(user)) {
+                console.error(`\t❌ Invalid userId received:`, user);
+                throw new Error('Invalid userId');
+            }
+            
+            const userObjectId = new mongoose.Types.ObjectId(user);
+            console.log(`\t✅ Converted userId: ${userObjectId}`);
+
             // Step 3: Save video details to MongoDB
             const video = await Video.create({
+                user: user,
                 requestId,
                 silenceParams: { noiseLevel, silenceDuration },
                 metaData: {
                     name,
-                    videoDuration: 0, // Placeholder, update after processing
+                    videoDuration: Number(videoDuration),
                     fileSize: fileSizeMB,
                     thumbnailPath: '', // Placeholder, update after processing
                 },

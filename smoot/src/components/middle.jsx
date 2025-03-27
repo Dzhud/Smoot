@@ -22,7 +22,6 @@ const Middle = () => {
         color: '#4D4DE6'
         
     }
-
    
     return(
         <div>

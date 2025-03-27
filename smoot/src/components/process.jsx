@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReactPlayer from "react-player";
 import VideoDropZone from "./videoDropZone.jsx";
-import VideoList from "./videoList.jsx";
+//import VideoList from "./videoList.jsx";
 import Sidebar from "./sidebar.jsx";
 import VideoProgress from "./progress.jsx";
 import io from "socket.io-client";
@@ -19,6 +19,7 @@ const Process = () => {
   const [requestId, setRequestId] = useState(null);
   const [processingComplete, setProcessingComplete] = useState(false);
   const [user, setUser] = useState(null);
+  const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
 
   // Inputs for silence detection
@@ -34,40 +35,38 @@ const Process = () => {
     status: null,
   });
 
-  useEffect(() => {
-    // Check if user is authenticated
-    const authToken = sessionStorage.getItem('authToken');
-    if (!authToken) {
-      navigate('/login');
-      return;
-    }
-
     // Fetch user data
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/users/me', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`,
-          },
-        });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch user data');
+    useEffect(() => {
+      // Fetch user data
+      const fetchUserData = async () => {
+        try {
+          const authToken = sessionStorage.getItem('authToken');
+          //console.log("Auth Token in Process:", authToken);
+  
+          const response = await fetch('http://localhost:5000/api/users/me', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`,
+            },
+          });
+  
+          if (!response.ok) {
+            throw new Error('Failed to fetch user data');
+          }
+          const data = await response.json();
+          //console.log("User Data:", data);
+          setUser(data);
+          setUserId(data._id);
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+          navigate('/login');
         }
-
-        const data = await response.json();
-        setUser(data);
-        console.log('Authtoken:', authToken);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        navigate('/login');
-      }
-    };
-
-    fetchUserData();
-  }, [navigate]);
+      };
+  
+      fetchUserData();
+    }, [navigate]);
 
   useEffect(() => {
     const handleProgressUpdate = (data) => {
@@ -122,7 +121,16 @@ const Process = () => {
     formData.append("name", videoObject.file);
     formData.append('noiseLevel', noiseLevel);
     formData.append('silenceDuration', silenceDuration);
+    formData.append('user', userId);
+    formData.append('videoDuration', Number(videoMetadata.videoDuration));
 
+    const authToken = sessionStorage.getItem('authToken');
+
+    if (!authToken) {
+      setErrorMessage("Authentication token missing. Please log in.");
+      navigate('/login');
+      return;
+      };
     setIsProcessing(true);
     setErrorMessage(null);
 
@@ -130,6 +138,9 @@ const Process = () => {
       const response = await fetch("http://localhost:5000/api/videos/upload", {
         method: "POST",
         body: formData,
+        headers: {
+          'Authorization': `Bearer ${authToken}`, 
+        }
       });
 
       if (!response.ok) {
@@ -159,6 +170,12 @@ const Process = () => {
     navigate('/login'); // Redirect to login page
   };
 
+  /*
+  useEffect(() => {
+    console.log("\t** User ID Set:", userId);  // ✅ Debugging line
+  }, [userId]);
+*/
+
   return (
     <div>
       <div id="header">
@@ -179,7 +196,8 @@ const Process = () => {
               <div className="flex flex-col m-2 pl-10 border-l-4 border-white-500">
                 <h1 className="text-2xl font-bold mb-4">Video Upload</h1>
                 <VideoDropZone onFilesAdded={handleFilesAdded} />
-                {user ? ( <div className="text-customBlue">Welcome, {user.username || user.email}</div>
+                
+                {user ? ( <div className="text-customBlue">Welcome,  <b>{user.username || user.email}</b></div>
                           ) : (
                             <p>Loading user data...</p>
                           )}
@@ -201,6 +219,13 @@ const Process = () => {
                                 height="180px"
                                 className="react-player"
                                 style={{ borderRadius: '1rem', overflow: 'hidden', objectFit: 'cover' }}
+                                onDuration={(duration) => {
+                                  //console.log("Video Duration (seconds):", duration);
+                                  setVideoMetadata((prev) => ({
+                                    ...prev,
+                                    videoDuration: duration, // Store the duration in video metadata
+                                  }));
+                                }}
                               />
                             </div>
                             <p className="text-customBlue font-extrabold">
@@ -266,7 +291,7 @@ const Process = () => {
                 {!processingComplete && requestId && <VideoProgress requestId={requestId} />}
                 
                 {errorMessage && (<div className="mt-4 text-red-500"><p>{errorMessage}</p></div>)}
-                <VideoList />
+               {/* <VideoList /> */}
               </div>
             </div>
           </div>
