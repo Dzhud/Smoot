@@ -11,14 +11,25 @@ const VideoList = () => {
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/videos/');
+        const authToken = sessionStorage.getItem('authToken'); // Retrieve the token from sessionStorage
+  
+        if (!authToken) {
+          throw new Error('Authentication token is missing. Please log in.');
+        }
+  
+        const response = await axios.get('http://localhost:5000/api/videos/', {
+          headers: {
+            Authorization: `Bearer ${authToken}`, // Include the token in the request headers
+          },
+        });
+  
         setVideos(response.data);
         setFilteredVideos(response.data);
       } catch (error) {
-        setErrorMessage(error.message);
+        setErrorMessage(error.response?.data?.message || error.message);
       }
     };
-
+  
     fetchVideos();
   }, []);
 

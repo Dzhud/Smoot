@@ -141,7 +141,7 @@ const uploadVideo = async (req, res) => {
 
         // Respond immediately, without waiting for processing to complete
         res.status(202).json({ message: "Video processing started", requestId,  status: 'queued',
-            originalFileName, noiseLevel, silenceDuration, user: req.user._id, videoDuration
+            originalFileName, noiseLevel, silenceDuration, user: req.user.userId, videoDuration
          });
         
     } catch (error) {
@@ -170,18 +170,20 @@ const getVideoByRequestId = async (req, res) => {
     }
 };
 
-const allVids = async (req, res) => {
+const allVids = 
+/*
+async (req, res) => {
     try {
         const videos = await Video.find();
         res.status(200).json(videos);
     } catch (err) {
         res.status(500).json(err);
     }
-}; 
-/*
+}; */
+
 async (req, res) => {
     try {
-        const userId = req.user._id; // Get authenticated user ID
+        const userId = req.user.userId; // Get authenticated user ID
 
         const videos = await Video.find({ user: userId }).populate('user', 'username email');
 
@@ -190,7 +192,7 @@ async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
-*/
+
 
 const updateSingleVid = async (req, res) => {
     try {

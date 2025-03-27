@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReactPlayer from "react-player";
 import VideoDropZone from "./videoDropZone.jsx";
-//import VideoList from "./videoList.jsx";
+import VideoList from "./videoList.jsx";
 import Sidebar from "./sidebar.jsx";
 import VideoProgress from "./progress.jsx";
 import io from "socket.io-client";
@@ -22,6 +22,9 @@ const Process = () => {
   const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    document.title = "Smoot - Process Video";
+  }, []);
   // Inputs for silence detection
   const [noiseLevel, setNoiseLevel] = useState("-30");
   const [silenceDuration, setSilenceDuration] = useState("2");
@@ -291,7 +294,7 @@ const Process = () => {
                 {!processingComplete && requestId && <VideoProgress requestId={requestId} />}
                 
                 {errorMessage && (<div className="mt-4 text-red-500"><p>{errorMessage}</p></div>)}
-               {/* <VideoList /> */}
+               <VideoList />
               </div>
             </div>
           </div>

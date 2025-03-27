@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 // Routes
 router.post('/upload', authMiddleware, upload.single('name'), uploadVideo);
 router.get('/:requestId', getVideoByRequestId);
-router.get('/', allVids);
+router.get('/', authMiddleware, allVids);
 router.patch('/:requestId', updateSingleVid);
 router.delete('/:requestId', delSingleVid);
 
