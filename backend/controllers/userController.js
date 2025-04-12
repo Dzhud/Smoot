@@ -60,20 +60,23 @@ const loginUser = async (req, res) => {
         //console.log('Stored hashed password:', user.password);
         //console.log('Provided password:', password);
 
+        user.lastLogin = new Date();
+        await user.save();
+        
         const isMatch = await bcrypt.compare(password, user.password);
-        console.log('Password match result:', isMatch); // Log the result of the password comparison
+        //console.log('Password match result:', isMatch); // Log the result of the password comparison
 
         if (!isMatch) {
             console.error('Password does not match');
             throw new Error('Invalid email or password');
         }
 
-        console.log('JWT_SECRET:', process.env.JWT_SECRET);
+        //console.log('JWT_SECRET:', process.env.JWT_SECRET);
 
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
             expiresIn: '1d',
         });
-        console.log('Generated JWT token:', token);
+        //console.log('Generated JWT token:', token);
 
         res.json({ token });
     } catch (error) {

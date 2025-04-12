@@ -228,6 +228,5 @@ export {
     allVids, updateSingleVid, delSingleVid, getVideoByRequestId,
 
 };
-//Address disjinted paylord to show nechanges in the backend
-//Add UserID to VideoProcess
+//Add 'DeleteVideo' to VideoList
 //GooglE login integration
