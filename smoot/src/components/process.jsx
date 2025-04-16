@@ -181,16 +181,17 @@ const Process = () => {
 
   return (
     <div>
-      <div id="header">
-        <div className="bg-customBlue">
+      
+        <div className="bg-customBlue" style={{ height: '4rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="text-white text-2xl font-bold ml-4">
           Logo Should Be Here
-          
+          </div>
           <button onClick={handleSignOut} className="bg-red-500 text-white p-2 rounded-lg"
           style={{ float: 'right', marginRight: '1rem' }}>
             Sign Out</button>
+          
         </div>
         
-      </div>
       <div className="flex-1 p-4 min-h-screen">
         <Sidebar />
         <div className="flex-1 ml-64 p-4 h-full">

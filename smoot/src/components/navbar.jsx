@@ -9,7 +9,8 @@ const Navbar = () => {
     color: 'white',
     //fontFamily: "'Arial', sans-serif",
     fontFamily: "'Inter var', sans-serif",
-    padding: '50px 20px'
+    padding: '50px 20px',
+    borderRadius: '10px',
   
   }
   const hStyle = {
@@ -18,8 +19,12 @@ const Navbar = () => {
     margin: '0',
     position: 'relative',
     marginBottom: '-35px',
+    animation: 'flyInFromLeft 1s ease-out'
     
     
+  }
+  const hStyle2 = { 
+    animation: 'flyInFromRight 1s ease-out',
   }
   const leftSide = {
     textAlign: 'left', paddingLeft: '50px', paddingTop: '200px'
@@ -32,7 +37,7 @@ const Navbar = () => {
     <div style={header}>
         <div style={leftSide}>
           <h1 className="text-1xl font-bold underline" style={hStyle}>Smoot</h1>
-          <h2 className="text-3xl font-bold"> Seamless AI-Powered Video Editing <br />
+          <h2 className="text-3xl font-bold" style={hStyle2}> Seamless AI-Powered Video Editing <br />
            for Effortless Perfection. </h2>
         </div>      
         <img src='/overview.png' loading='lazy' alt='snapshot' style={forImg}/>

@@ -22,7 +22,9 @@ const Sidebar = () => {
     ];
 
     return (
-        <div className="fixed top-0 left-0 h-full bg-customLight3 text-white p-4 rounded-r-2xl shadow-lg">
+        //<div className="fixed top-0 left-0 h-full bg-customLight3 text-white p-4 rounded-r-2xl shadow-lg">
+        <div className="fixed top-16 left-0 h-full bg-customLight3 text-white p-4 rounded-r-2xl shadow-lg">
+        
             <div className="flex flex-col space-y-4">
                 {features.map(({ icon: Icon, label, enabled }, index) => (
                     <div key={index} className="flex items-center space-x-2">
