@@ -42,7 +42,7 @@ const Footer = () => {
   };
 
   return (
-    <div style={styleFootBg}>
+    <div style={styleFootBg} id='contact'>
       <div style={styleContent}>
         <h4 style={styleHeading}>Smoot</h4>
         <p style={styleParagraph}>

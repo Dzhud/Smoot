@@ -5,6 +5,7 @@ module.exports = {
   ],
   theme: {
     extend: {
+  
       colors: {
         customBlue: '#4D4DE6',
         customLight1: '#B2B2F9',
@@ -16,7 +17,7 @@ module.exports = {
         softBeige: '#F8E69A',
         lightPurple: '#9370DB',
         whiteSmoke: '#F5F5F5',
-      },
+      }, 
       '.react-player': {
         borderRadius: '10px',
         boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.1)',
@@ -42,6 +43,11 @@ module.exports = {
           "0%": { transform: "translateY(100%)" },
           "100%": { transform: "translateY(0)" },
         },
+        jump: {
+          "0%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+          "100%": { transform: "translateY(0)" },
+        },
       },
       fontFamily: {
         //amanda: ['Amanda Rose', 'cursive'], // Add Amanda Rose font
@@ -51,11 +57,25 @@ module.exports = {
         playfair: ['Playfair Display', 'serif'],
       },
       animation: {
+        jump: "jump 1s ease-in-out infinite",
         fadeOut: "fadeOut 0.5s ease-out",
         flyInFromLeft: "flyInFromLeft 1s ease-out",
         flyInFromRight: "flyInFromRight 1s ease-out",
         flyInFromTop: "flyInFromTop 1s ease-out",
         flyInFromBottom: "flyInFromBottom 1s ease-out",
+      },
+      transitionProperty: {
+        'width': 'width',
+        'opacity': 'opacity',
+        'transform': 'transform',
+      },
+      transitionDuration: {
+        '400': '400ms',
+        '700': '700ms',
+      },
+      transitionTimingFunction: {
+        'ease-in-out': 'ease-in-out',
+        'ease-out': 'ease-out',
       },
     },
   },

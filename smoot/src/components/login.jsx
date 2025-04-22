@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Navbar from "./navbar.jsx";
+
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -40,6 +42,8 @@ const Login = () => {
   };
 
   return (
+    <div>
+      <Navbar />
     <div className="min-h-screen flex items-center justify-center bg-gray-100" style={{ backgroundImage: 'url(/pl.png)', backgroundSize: 'cover' }}>
       <div className="max-w-md w-full bg-white shadow-md rounded-lg p-8">
         <h2 className="text-2xl font-bold text-center text-customBlue mb-6">Login</h2>
@@ -79,6 +83,7 @@ const Login = () => {
         </p>
       </div>
       <ToastContainer />
+    </div>
     </div>
   );
 };

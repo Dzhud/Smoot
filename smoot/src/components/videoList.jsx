@@ -9,6 +9,7 @@ const VideoList = () => {
   const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
 
   useEffect(() => {
+    
     const fetchVideos = async () => {
       try {
         const authToken = sessionStorage.getItem('authToken'); // Retrieve the token from sessionStorage
@@ -74,8 +75,8 @@ const VideoList = () => {
 
   return (
     <div className="container mx-auto mt-8">
-      <h2 className="text-2xl font-semibold mb-4">Processed Videos</h2>
-      
+      <h2 className="text-2xl font-semibold mb-4 text-customBlue">Processed Videos</h2>
+
       {errorMessage && (
         <div className="text-red-500 mb-4">
           <p>{errorMessage}</p>

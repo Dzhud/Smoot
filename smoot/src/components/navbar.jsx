@@ -1,48 +1,34 @@
 import React from 'react';
-//import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 
 const Navbar = () => {
-  const header = {
-    height: '800px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between',
-    backgroundColor: '#4D4DE6',
-    color: 'white',
-    //fontFamily: "'Arial', sans-serif",
-    fontFamily: "'Inter var', sans-serif",
-    padding: '50px 20px',
-    borderRadius: '10px',
-  
-  }
-  const hStyle = {
-    fontSize: '150px',
-    fontWeight: 'bold',
-    margin: '0',
-    position: 'relative',
-    marginBottom: '-35px',
-    animation: 'flyInFromLeft 1s ease-out'
-    
-    
-  }
-  const hStyle2 = { 
-    animation: 'flyInFromRight 1s ease-out',
-  }
-  const leftSide = {
-    textAlign: 'left', paddingLeft: '50px', paddingTop: '200px'
-  }
-  const forImg= {
-    marginRight: '-20px'
-  }
+  const navigate = useNavigate();
+  const handleLogin = () => {
+    navigate('/process');
+};
+
+
 
   return (
-    <div style={header}>
-        <div style={leftSide}>
-          <h1 className="text-1xl font-bold underline" style={hStyle}>Smoot</h1>
-          <h2 className="text-3xl font-bold" style={hStyle2}> Seamless AI-Powered Video Editing <br />
-           for Effortless Perfection. </h2>
-        </div>      
-        <img src='/overview.png' loading='lazy' alt='snapshot' style={forImg}/>
+    <div style={{ position: 'static' }}>
+      <div className="bg-white shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav style={{ height: '10vh'}} className="flex items-center justify-between py-6">
+            <div className="text-white text-2xl font-bold">
+              <a href='/'><img src='/smt.png' alt='logo' className='h-16 w-auto mx-auto'/></a>
+            </div>
+            <div className="hidden md:flex space-x-4" style={{ fontFamily: 'montserrat', fontSize: '20px', fontWeight: 'bold' }}>
+              <a href="#features" className="text-customBlue hover:text-yellow-500 hover:underline">Features</a>
+              <a href="#testimonials" className="text-customBlue hover:text-yellow-500 hover:underline">Testimonials</a>
+              <a href="#contact" className="text-customBlue hover:text-yellow-500 hover:underline">Contact</a>
+              <button className="text-customBlue hover:text-yellow-500 hover:underline" onClick={handleLogin}>Login</button>
+            </div>
+          </nav>
+        </div>
+        </div>
 
-
+   
     </div>
   )
 }

@@ -20,6 +20,8 @@ const Process = () => {
   const [processingComplete, setProcessingComplete] = useState(false);
   const [user, setUser] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [reloadVideoList, setReloadVideoList] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false); // Dropdown state
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,38 +40,32 @@ const Process = () => {
     status: null,
   });
 
-    // Fetch user data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const authToken = sessionStorage.getItem('authToken');
+        const response = await fetch('http://localhost:5000/api/users/me', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
+        });
 
-    useEffect(() => {
-      // Fetch user data
-      const fetchUserData = async () => {
-        try {
-          const authToken = sessionStorage.getItem('authToken');
-          //console.log("Auth Token in Process:", authToken);
-  
-          const response = await fetch('http://localhost:5000/api/users/me', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${authToken}`,
-            },
-          });
-  
-          if (!response.ok) {
-            throw new Error('Failed to fetch user data');
-          }
-          const data = await response.json();
-          //console.log("User Data:", data);
-          setUser(data);
-          setUserId(data._id);
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-          navigate('/login');
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
         }
-      };
-  
-      fetchUserData();
-    }, [navigate]);
+        const data = await response.json();
+        setUser(data);
+        setUserId(data._id);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        navigate('/login');
+      }
+    };
+
+    fetchUserData();
+  }, [navigate]);
 
   useEffect(() => {
     const handleProgressUpdate = (data) => {
@@ -77,6 +73,7 @@ const Process = () => {
         if (data.progress === 100) {
           setProcessingComplete(true);
           setIsProcessing(false);
+          setReloadVideoList(prev => !prev); // Toggle state to trigger reload
 
           // Display toast notification
           toast.success(
@@ -161,50 +158,101 @@ const Process = () => {
         silenceDuration: data.silenceDuration,
         status: data.status,
       });
+      
     } catch (error) {
       console.error("Error occurred:", error);
       setErrorMessage("An error occurred while processing the video. Please try again.");
       setIsProcessing(false);
     }
   };
-  const handleSignOut = () => {
-    // Clear user authentication token or session
-    sessionStorage.removeItem('authToken'); // Assuming the token is stored in sessionStorage
-    navigate('/login'); // Redirect to login page
-  };
 
-  /*
-  useEffect(() => {
-    console.log("\t** User ID Set:", userId);  // ✅ Debugging line
-  }, [userId]);
-*/
+  const handleSignOut = () => {
+    sessionStorage.removeItem('authToken'); // Clear user authentication token
+    navigate('/'); // Redirect to login page
+  };
 
   return (
     <div>
-      
-        <div className="bg-customBlue" style={{ height: '4rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div className="text-white text-2xl font-bold ml-4">
-          Logo Should Be Here
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10 }}>
+        <div className="flex items-center justify-between bg-white shadow-md">
+          <div className="text-white text-2xl font-bold">
+            <a href="/">
+              <img src="/smt.png" alt="logo" className="h-12 w-auto" />
+            </a>
           </div>
-          <button onClick={handleSignOut} className="bg-red-500 text-white p-2 rounded-lg"
-          style={{ float: 'right', marginRight: '1rem' }}>
-            Sign Out</button>
-          
+
+          {/* Dropdown for user */}
+          {user ? (
+            <div className="relative">
+              <div
+                className="flex items-center space-x-2 cursor-pointer"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+              >
+                <span className="text-customBlue font-bold">
+                  {user.username || user.email}
+                </span>
+                <svg
+                  className={`w-4 h-4 text-customBlue transition-transform duration-300 ${
+                    dropdownOpen ? "rotate-180" : ""
+                  }`}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
+                  <a
+                    href="/dashboard"
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-customBlue transition-colors duration-200"
+                  >
+                    Dashboard
+                  </a>
+                  <a
+                    href="/settings"
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-customBlue transition-colors duration-200"
+                  >
+                    Settings
+                  </a>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-red-500 transition-colors duration-200"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p>Loading user data...</p>
+          )}
         </div>
+      </div>
+
+      {/* Beta Banner */}
+      <div style={{ position: 'fixed', top: '3rem', left: 0, right: 0, zIndex: 9 }}>
+        <div className="bg-yellow-300 text-black text-center py-0 font-bold">
+          🚧 Beta Version. 🚀
+        </div>
+      </div>
         
       <div className="flex-1 p-4 min-h-screen">
-        <Sidebar />
+        <Sidebar /> <br />
         <div className="flex-1 ml-64 p-4 h-full">
           <div className="relative flex flex-row items-start space-y-4 p-4">
-            <div className="flex bg-zinc-50">
+            <div className="flex bg-zinc-50" style={{ borderRadius: '1rem' }}>
               <div className="flex flex-col m-2 pl-10 border-l-4 border-white-500">
-                <h1 className="text-2xl font-bold mb-4">Video Upload</h1>
+                <h1 className="text-2xl font-bold mb-4 text-customBlue">Video Upload</h1>
                 <VideoDropZone onFilesAdded={handleFilesAdded} />
-                
-                {user ? ( <div className="text-customBlue">Welcome,  <b>{user.username || user.email}</b></div>
-                          ) : (
-                            <p>Loading user data...</p>
-                          )}
 
                 {videos.length > 0 && (
                   <div className="mt-4" >
@@ -224,7 +272,6 @@ const Process = () => {
                                 className="react-player"
                                 style={{ borderRadius: '1rem', overflow: 'hidden', objectFit: 'cover' }}
                                 onDuration={(duration) => {
-                                  //console.log("Video Duration (seconds):", duration);
                                   setVideoMetadata((prev) => ({
                                     ...prev,
                                     videoDuration: duration, // Store the duration in video metadata
@@ -240,14 +287,14 @@ const Process = () => {
                           {selectedVideo === video.url && (
                             <div className="flex flex-row mt-4 space-x-4" id='silentParams'>
                               <div className="mt-4">
-                                <label htmlFor="noiseLevel" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="noiseLevel" className="block text-sm font-medium text-customBlue">
                                   Noise Level (dB)
                                 </label>
                                 <select
                                   id="noiseLevel"
                                   value={noiseLevel}
                                   onChange={(e) => setNoiseLevel(e.target.value)}
-                                  className="border border-gray-300 rounded px-2 py-1 mt-1"
+                                  className="border border-customBlue rounded px-2 py-1 mt-1 text-customBlue"
                                 >
                                   {Array.from({ length: 81 }, (_, i) => -90 + i).map((level) => (
                                     <option key={level} value={level}>
@@ -258,14 +305,14 @@ const Process = () => {
                               </div>
 
                               <div className="mt-4">
-                                <label htmlFor="silenceDuration" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="silenceDuration" className="block text-sm font-medium text-customBlue">
                                   Silence Duration (seconds)
                                 </label>
                                 <select
                                   id="silenceDuration"
                                   value={silenceDuration}
                                   onChange={(e) => setSilenceDuration(e.target.value)}
-                                  className="border border-gray-300 rounded px-2 py-1 mt-1"
+                                  className="border border-customBlue rounded px-2 py-1 mt-1 text-customBlue"
                                 >
                                   {Array.from({ length: 5 }, (_, i) => i + 1).map((duration) => (
                                     <option key={duration} value={duration}>
@@ -290,12 +337,10 @@ const Process = () => {
                   </div>
                 )}
 
-               
-
                 {!processingComplete && requestId && <VideoProgress requestId={requestId} />}
                 
                 {errorMessage && (<div className="mt-4 text-red-500"><p>{errorMessage}</p></div>)}
-               <VideoList />
+                <VideoList key={reloadVideoList} />
               </div>
             </div>
           </div>
