@@ -13,10 +13,13 @@ dotenv.config();
 const connection = new Redis({
     host: process.env.REDIS_HOST,
     port: process.env.REDIS_PORT,
+    password: process.env.REDIS_PASSWORD,
     maxRetriesPerRequest: null,
 });
 
 connection.on("error", (err) => console.error("\t❌ Redis Error:", err));
+
+
 
 // Function to convert bytes to megabytes
 const bytesToMB = (bytes) => (bytes / (1024 * 1024)).toFixed(2);

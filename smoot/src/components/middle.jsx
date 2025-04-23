@@ -92,7 +92,7 @@ const Middle = () => {
 
     return (
         <div>
-             <div style={header}>
+             <div style={header} >
                 <div style={leftSide}>
                 <h1 className="text-1xl font-bold underline" style={hStyle}>Smoot</h1>
                 <h2 className="text-3xl font-bold" style={hStyle2}> Seamless AI-Powered Video Editing <br />
