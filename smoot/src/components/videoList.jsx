@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import {TrashIcon } from "@heroicons/react/outline";
 
 
 const VideoList = () => {
@@ -70,7 +71,31 @@ const VideoList = () => {
     }
   };
 
+  // Function to delete a video
+  const handleDeleteVideo = async (requestId) => {
+    const authToken = sessionStorage.getItem('authToken');
 
+    if (!authToken) {
+      setErrorMessage('Authentication token is missing. Please log in.');
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`http://localhost:5000/api/videos/${requestId}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      if (response.status === 200) {
+        // Remove the deleted video from the state
+        setVideos((prevVideos) => prevVideos.filter((video) => video.requestId !== requestId));
+        setFilteredVideos((prevVideos) => prevVideos.filter((video) => video.requestId !== requestId));
+      }
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || 'Failed to delete the video.');
+    }
+  };
 
 
   return (
@@ -109,6 +134,14 @@ const VideoList = () => {
                 </video>
                 </td>
               <td className="py-2 px-4 border-b">{new Date(video.createdAt).toLocaleDateString()}</td>
+              <td className="py-2 px-4 border-b">
+                <button
+                  className="p-2 bg-red-500 text-white rounded flex items-center justify-center"
+                  onClick={() => handleDeleteVideo(video.requestId)}
+                >
+                  <TrashIcon className="h-5 w-5 text-white" /> 
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
