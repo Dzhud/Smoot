@@ -1,3 +1,4 @@
+import fs from 'fs/promises'
 import { Worker } from 'bullmq';
 import Redis from 'ioredis';
 import path from 'path';
@@ -86,6 +87,9 @@ const videoWorkers = new Worker(
 
             io.emit("processing_complete", { requestId, progress: 100, message: "Video processing complete!", video });
             console.log(`\n✅ Video saved to DB: ${video.requestId}`);
+            // Delete the input file to free up space
+            await fs.unlink(inputFilePath);
+            console.log(`\t🗑️ Deleted input file: ${inputFilePath}`);
 
         } catch (error) {
             io.emit("processing_failed", { requestId, progress: 0, error: error.message });

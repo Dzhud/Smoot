@@ -228,5 +228,5 @@ export {
     allVids, updateSingleVid, delSingleVid, getVideoByRequestId,
 
 };
-//Add 'DeleteVideo' to VideoList
+
 //GooglE login integration
