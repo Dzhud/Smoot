@@ -89,7 +89,16 @@ const videoWorkers = new Worker(
             console.log(`\n✅ Video saved to DB: ${video.requestId}`);
             // Delete the input file to free up space
             await fs.unlink(inputFilePath);
-            console.log(`\t🗑️ Deleted input file: ${inputFilePath}`);
+            console.log(`\t 🗑️ Deleted input file: ${inputFilePath}`);
+
+            // delete dummy output file in main dir if it exists
+            try {
+                const dummyOutputFilePath = path.resolve('dummyOutputFile.mp4');
+                await fs.unlink(dummyOutputFilePath);
+                console.log(`\t🗑️ Deleted dummy output file: ${dummyOutputFilePath}`);
+            } catch (err) {
+                console.error(`\t❌ Failed to delete dummy output file: ${err.message}`);
+            }
 
         } catch (error) {
             io.emit("processing_failed", { requestId, progress: 0, error: error.message });
